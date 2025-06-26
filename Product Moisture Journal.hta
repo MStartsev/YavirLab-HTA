@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Журнал вологості продукції</title>
+    <HTA:APPLICATION
+      ID="ProductMoistureApp"
+      APPLICATIONNAME="Product Moisture Tracker"
+      BORDER="thin"
+      BORDERSTYLE="normal"
+      CAPTION="yes"
+      MAXIMIZEBUTTON="yes"
+      MINIMIZEBUTTON="yes"
+      SHOWINTASKBAR="yes"
+      SINGLEINSTANCE="yes"
+      SYSMENU="yes"
+      WINDOWSTATE="normal"
+      SCROLL="yes"
+      SELECTION="no"
+    />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 15px;
+        background-color: #f5f5f5;
+        margin: 0;
+        color: #333;
+        min-height: 100vh;
+      }
+      .container {
+        background: white;
+        padding: 25px;
+        border: 1px solid #ddd;
+        max-width: 800px;
+        margin: 0 auto;
+        min-height: 600px;
+      }
+      h1 {
+        text-align: center;
+        color: #2c3e50;
+        margin-bottom: 25px;
+        font-size: 24px;
+      }
+
+      .tabs {
+        margin-bottom: 20px;
+        border-bottom: 2px solid #ddd;
+      }
+      .tab-button {
+        background: #f0f0f0;
+        border: 1px solid #ddd;
+        padding: 10px 20px;
+        cursor: pointer;
+        display: inline-block;
+        margin-right: 5px;
+        font-weight: bold;
+      }
+      .tab-button.active {
+        background: white;
+        border-bottom: 2px solid white;
+        margin-bottom: -2px;
+      }
+      .tab-content {
+        display: none;
+        padding: 20px 0;
+      }
+      #input-tab {
+        display: block;
+      }
+
+      .input-group {
+        margin: 15px 0;
+        display: block;
+      }
+      .input-row {
+        margin: 10px 0;
+        display: block;
+      }
+      label {
+        display: inline-block;
+        width: 140px;
+        font-weight: bold;
+        color: #34495e;
+        vertical-align: top;
+      }
+      input[type="date"],
+      input[type="number"],
+      select {
+        padding: 8px 10px;
+        border: 2px solid #e0e0e0;
+        font-size: 14px;
+        width: 120px;
+        margin-left: 10px;
+      }
+      input[type="date"]:focus,
+      input[type="number"]:focus,
+      select:focus {
+        outline: none;
+        border-color: #3498db;
+      }
+
+      .moisture-fields {
+        background: #f9f9f9;
+        padding: 15px;
+        border: 1px solid #ddd;
+        margin: 15px 0;
+      }
+      .moisture-fields h3 {
+        margin-top: 0;
+        color: #2c3e50;
+      }
+
+      .button-group {
+        text-align: center;
+        margin: 25px 0;
+      }
+      button {
+        padding: 12px 20px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+        font-weight: bold;
+        cursor: pointer;
+        margin: 0 5px;
+        min-width: 140px;
+        background: #3498db;
+        color: white;
+      }
+      button:hover {
+        background: #2980b9;
+      }
+      .btn-success {
+        background: #27ae60;
+      }
+      .btn-success:hover {
+        background: #229954;
+      }
+      .btn-info {
+        background: #17a2b8;
+      }
+      .btn-info:hover {
+        background: #138496;
+      }
+      .btn-warning {
+        background: #f39c12;
+      }
+      .btn-warning:hover {
+        background: #e67e22;
+      }
+
+      .status {
+        margin: 15px 0;
+        padding: 12px 15px;
+        border-left: 4px solid;
+        font-weight: bold;
+      }
+      .success {
+        background: #d4edda;
+        border-left-color: #28a745;
+        color: #155724;
+      }
+      .error {
+        background: #f8d7da;
+        border-left-color: #dc3545;
+        color: #721c24;
+      }
+      .info {
+        background: #cce7ff;
+        border-left-color: #007bff;
+        color: #004085;
+      }
+
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        margin-top: 20px;
+        background: white;
+        border: 1px solid #ddd;
+      }
+      th,
+      td {
+        padding: 8px;
+        text-align: center;
+        border: 1px solid #ddd;
+        font-size: 12px;
+      }
+      th {
+        background: #f8f9fa;
+        font-weight: bold;
+        color: #495057;
+      }
+      tr:nth-child(even) {
+        background: #f8f9fa;
+      }
+
+      .stats-container {
+        margin: 20px 0;
+      }
+      .stat-box {
+        background: #f8f9fa;
+        padding: 15px;
+        border: 1px solid #ddd;
+        text-align: center;
+        display: inline-block;
+        margin: 5px;
+        min-width: 120px;
+      }
+      .stat-value {
+        font-size: 18px;
+        font-weight: bold;
+        color: #2c3e50;
+      }
+      .stat-label {
+        font-size: 12px;
+        color: #6c757d;
+        margin-top: 5px;
+      }
+
+      .file-info {
+        font-size: 12px;
+        color: #6c757d;
+        margin-top: 10px;
+        text-align: center;
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>📊 Журнал вологості продукції</h1>
+
+      <div class="tabs">
+        <div class="tab-button active" onclick="showTab('input')">
+          📝 Введення даних
+        </div>
+        <div class="tab-button" onclick="showTab('averages')">
+          📊 Середні за датами
+        </div>
+        <div class="tab-button" onclick="showTab('data')">📋 Всі записи</div>
+      </div>
+
+      <!-- Вкладка введення даних -->
+      <div id="input-tab" class="tab-content active">
+        <div class="input-group">
+          <div class="input-row">
+            <label for="inputDate">📅 Дата:</label>
+            <input type="date" id="inputDate" />
+          </div>
+
+          <div class="input-row">
+            <label for="sampleNumber">🔢 Відбір №:</label>
+            <select id="sampleNumber">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="moisture-fields">
+          <h3>💧 Показники вологості:</h3>
+
+          <div class="input-row">
+            <label for="moisture_drana">I драна (%):</label>
+            <input
+              type="text"
+              id="moisture_drana"
+              placeholder="14,5 або 14.5"
+            />
+          </div>
+
+          <div class="input-row">
+            <label for="moisture_flour_vs">Борошно В/С (%):</label>
+            <input
+              type="text"
+              id="moisture_flour_vs"
+              placeholder="14,5 або 14.5"
+            />
+          </div>
+
+          <div class="input-row">
+            <label for="moisture_flour_1s">Борошно 1/С (%):</label>
+            <input
+              type="text"
+              id="moisture_flour_1s"
+              placeholder="14,5 або 14.5"
+            />
+          </div>
+
+          <div class="input-row">
+            <label for="moisture_soak1">1 замочка (%):</label>
+            <input
+              type="text"
+              id="moisture_soak1"
+              placeholder="14,5 або 14.5"
+            />
+          </div>
+
+          <div class="input-row">
+            <label for="moisture_supply">Подача (%):</label>
+            <input
+              type="text"
+              id="moisture_supply"
+              placeholder="14,5 або 14.5"
+            />
+          </div>
+        </div>
+
+        <div class="button-group">
+          <button onclick="saveData()">💾 Зберегти</button>
+          <button class="btn-info" onclick="exportCSV()">📄 Експорт CSV</button>
+          <button class="btn-warning" onclick="clearAllData()">
+            🗑️ Очистити все
+          </button>
+        </div>
+
+        <div id="status"></div>
+        <div id="fileInfo" class="file-info"></div>
+      </div>
+
+      <!-- Вкладка середніх значень -->
+      <div id="averages-tab" class="tab-content">
+        <h3>📊 Середні значення вологості по датах</h3>
+        <div id="averagesDisplay"></div>
+      </div>
+
+      <!-- Вкладка всіх записів -->
+      <div id="data-tab" class="tab-content">
+        <h3>📋 Всі записи</h3>
+        <div class="button-group">
+          <button class="btn-success" onclick="loadData()">
+            📊 Оновити дані
+          </button>
+        </div>
+        <div id="stats"></div>
+        <div id="dataDisplay"></div>
+      </div>
+    </div>
+
+    <script language="VBScript">
+      Dim fso, csvFilePath, shell
+      Dim totalRecords
+
+      Sub Window_OnLoad
+          On Error Resume Next
+
+          Set fso = CreateObject("Scripting.FileSystemObject")
+          Set shell = CreateObject("WScript.Shell")
+
+          Dim safePath
+          safePath = GetSafeDataPath()
+          csvFilePath = safePath & "\db.csv"
+
+          SetCurrentDate()
+          InitializeDataFile()
+          LoadDataSilently()
+
+          ShowStatus "✅ Додаток готовий до роботи", "success"
+          UpdateFileInfo()
+
+          If Err.Number <> 0 Then
+              ShowStatus "⚠️ Помилка ініціалізації: " & Err.Description, "error"
+          End If
+
+          On Error GoTo 0
+      End Sub
+
+      Function GetSafeDataPath()
+          On Error Resume Next
+
+          ' Визначити папку, де знаходиться HTA файл
+          Dim currentPath, databasePath
+          currentPath = fso.GetParentFolderName(Replace(location.pathname, "/", "\"))
+          If Left(currentPath, 1) = "\" Then
+              currentPath = Mid(currentPath, 2)
+          End If
+
+          ' Створити папку database поряд з HTA файлом
+          databasePath = currentPath & "\database"
+
+          If Not fso.FolderExists(databasePath) Then
+              fso.CreateFolder(databasePath)
+          End If
+
+          GetSafeDataPath = databasePath
+
+          On Error GoTo 0
+      End Function
+
+      ' Функція для перевірки чи є значення числом (підтримка і крапки, і коми)
+      Function IsValidNumber(value)
+          On Error Resume Next
+          IsValidNumber = False
+          If value = "" Then Exit Function
+
+          ' У українській локалізації кома є десятковим роздільником
+          ' Спочатку спробувати з комою (стандарт для України)
+          Dim testValue
+          testValue = Replace(value, ".", ",")
+          If IsNumeric(testValue) Then
+              IsValidNumber = True
+              Exit Function
+          End If
+
+          ' Якщо не працює - спробувати оригінальне значення
+          If IsNumeric(value) Then
+              IsValidNumber = True
+              Exit Function
+          End If
+
+          On Error GoTo 0
+      End Function
+
+      ' Функція для отримання числового значення
+      Function GetNumericValue(value)
+          On Error Resume Next
+          ' Перетворити в формат який розуміє система
+          Dim testValue
+          testValue = Replace(value, ".", ",")
+          GetNumericValue = CDbl(testValue)
+          On Error GoTo 0
+      End Function
+
+      Function TestWriteAccess(folderPath)
+          On Error Resume Next
+          TestWriteAccess = False
+
+          If Not fso.FolderExists(folderPath) Then Exit Function
+
+          Dim testFile, file
+          testFile = folderPath & "\test_" & Timer & ".tmp"
+          Set file = fso.CreateTextFile(testFile, True)
+          If Err.Number = 0 Then
+              file.Close
+              fso.DeleteFile(testFile)
+              TestWriteAccess = True
+          End If
+          Set file = Nothing
+          On Error GoTo 0
+      End Function
+
+      Sub SetCurrentDate()
+          Dim today
+          today = Date()
+          document.getElementById("inputDate").value = Year(today) & "-" & Right("0" & Month(today), 2) & "-" & Right("0" & Day(today), 2)
+      End Sub
+
+      Sub InitializeDataFile()
+          On Error Resume Next
+          If Not fso.FileExists(csvFilePath) Then
+              Dim file
+              Set file = fso.CreateTextFile(csvFilePath, True, True)
+              file.WriteLine "Дата,Відбір_№,I_драна,Борошно_ВС,Борошно_1С,Замочка_1,Подача,Час_запису"
+              file.Close
+              Set file = Nothing
+          End If
+          On Error GoTo 0
+      End Sub
+
+      Sub ShowStatus(message, statusType)
+          document.getElementById("status").innerHTML = "<div class='status " & statusType & "'>" & message & "</div>"
+      End Sub
+
+      Sub UpdateFileInfo()
+          Dim info
+          If fso.FileExists(csvFilePath) Then
+              Dim fileSize
+              fileSize = Round(fso.GetFile(csvFilePath).Size / 1024, 2)
+              info = "📁 Файл: " & fso.GetFileName(csvFilePath) & " | 📂 Розмір: " & fileSize & " KB"
+          Else
+              info = "📁 Файл буде створено після першого збереження"
+          End If
+          document.getElementById("fileInfo").innerHTML = info
+      End Sub
+
+      Function ValidateInputs()
+          ValidateInputs = True
+
+          Dim inputDate, sampleNum, drana, flour_vs, flour_1s, soak1, supply
+          inputDate = Trim(document.getElementById("inputDate").value)
+          sampleNum = Trim(document.getElementById("sampleNumber").value)
+          drana = Trim(document.getElementById("moisture_drana").value)
+          flour_vs = Trim(document.getElementById("moisture_flour_vs").value)
+          flour_1s = Trim(document.getElementById("moisture_flour_1s").value)
+          soak1 = Trim(document.getElementById("moisture_soak1").value)
+          supply = Trim(document.getElementById("moisture_supply").value)
+
+          If inputDate = "" Then
+              ShowStatus "❌ Будь ласка, введіть дату!", "error"
+              document.getElementById("inputDate").focus()
+              ValidateInputs = False
+              Exit Function
+          End If
+
+          ' Перевірка принаймні одного поля вологості
+          If drana = "" And flour_vs = "" And flour_1s = "" And soak1 = "" And supply = "" Then
+              ShowStatus "❌ Заповніть принаймні одне поле вологості!", "error"
+              ValidateInputs = False
+              Exit Function
+          End If
+
+          ' Перевірка числових значень (підтримка як коми, так і крапки)
+          If drana <> "" Then
+              If Not IsValidNumber(drana) Then
+                  ShowStatus "❌ I драна: некоректне значення! Введено: " & drana, "error"
+                  ValidateInputs = False
+                  Exit Function
+              End If
+              Dim dranaVal
+              dranaVal = GetNumericValue(drana)
+              If dranaVal < 0 Or dranaVal > 100 Then
+                  ShowStatus "❌ I драна: значення повинно бути від 0 до 100%! Введено: " & drana, "error"
+                  ValidateInputs = False
+                  Exit Function
+              End If
+          End If
+
+          If flour_vs <> "" Then
+              If Not IsValidNumber(flour_vs) Then
+                  ShowStatus "❌ Борошно В/С: некоректне значення! Введено: " & flour_vs, "error"
+                  ValidateInputs = False
+                  Exit Function
+              End If
+              Dim flourVsVal
+              flourVsVal = GetNumericValue(flour_vs)
+              If flourVsVal < 0 Or flourVsVal > 100 Then
+                  ShowStatus "❌ Борошно В/С: значення повинно бути від 0 до 100%! Введено: " & flour_vs, "error"
+                  ValidateInputs = False
+                  Exit Function
+              End If
+          End If
+
+          If flour_1s <> "" Then
+              If Not IsValidNumber(flour_1s) Then
+                  ShowStatus "❌ Борошно 1/С: некоректне значення! Введено: " & flour_1s, "error"
+                  ValidateInputs = False
+                  Exit Function
+              End If
+              Dim flour1sVal
+              flour1sVal = GetNumericValue(flour_1s)
+              If flour1sVal < 0 Or flour1sVal > 100 Then
+                  ShowStatus "❌ Борошно 1/С: значення повинно бути від 0 до 100%! Введено: " & flour_1s, "error"
+                  ValidateInputs = False
+                  Exit Function
+              End If
+          End If
+
+          If soak1 <> "" Then
+              If Not IsValidNumber(soak1) Then
+                  ShowStatus "❌ 1 замочка: некоректне значення! Введено: " & soak1, "error"
+                  ValidateInputs = False
+                  Exit Function
+              End If
+              Dim soak1Val
+              soak1Val = GetNumericValue(soak1)
+              If soak1Val < 0 Or soak1Val > 100 Then
+                  ShowStatus "❌ 1 замочка: значення повинно бути від 0 до 100%! Введено: " & soak1, "error"
+                  ValidateInputs = False
+                  Exit Function
+              End If
+          End If
+
+          If supply <> "" Then
+              If Not IsValidNumber(supply) Then
+                  ShowStatus "❌ Подача: некоректне значення! Введено: " & supply, "error"
+                  ValidateInputs = False
+                  Exit Function
+              End If
+              Dim supplyVal
+              supplyVal = GetNumericValue(supply)
+              If supplyVal < 0 Or supplyVal > 100 Then
+                  ShowStatus "❌ Подача: значення повинно бути від 0 до 100%! Введено: " & supply, "error"
+                  ValidateInputs = False
+                  Exit Function
+              End If
+          End If
+      End Function
+
+      Sub saveData()
+          On Error Resume Next
+
+          ' Спочатку валідація
+          If Not ValidateInputs() Then
+              Exit Sub
+          End If
+
+          ' Отримання значень після успішної валідації
+          Dim inputDate, sampleNum, drana, flour_vs, flour_1s, soak1, supply
+          inputDate = document.getElementById("inputDate").value
+          sampleNum = document.getElementById("sampleNumber").value
+          drana = Trim(document.getElementById("moisture_drana").value)
+          flour_vs = Trim(document.getElementById("moisture_flour_vs").value)
+          flour_1s = Trim(document.getElementById("moisture_flour_1s").value)
+          soak1 = Trim(document.getElementById("moisture_soak1").value)
+          supply = Trim(document.getElementById("moisture_supply").value)
+
+          Dim currentTime
+          currentTime = Now()
+
+          ' Замінити порожні поля на "-" і нормалізувати числові значення для CSV
+          If drana = "" Then
+              drana = "-"
+          Else
+              ' Зберігати в CSV з крапкою (стандарт CSV), незалежно від введення
+              drana = Replace(drana, ",", ".")
+          End If
+
+          If flour_vs = "" Then
+              flour_vs = "-"
+          Else
+              flour_vs = Replace(flour_vs, ",", ".")
+          End If
+
+          If flour_1s = "" Then
+              flour_1s = "-"
+          Else
+              flour_1s = Replace(flour_1s, ",", ".")
+          End If
+
+          If soak1 = "" Then
+              soak1 = "-"
+          Else
+              soak1 = Replace(soak1, ",", ".")
+          End If
+
+          If supply = "" Then
+              supply = "-"
+          Else
+              supply = Replace(supply, ",", ".")
+          End If
+
+          ' Запис у файл
+          Dim file
+          Set file = fso.OpenTextFile(csvFilePath, 8, True, -1)
+          Dim csvLine
+          csvLine = inputDate & "," & sampleNum & "," & drana & "," & flour_vs & "," & flour_1s & "," & soak1 & "," & supply & "," & currentTime
+          file.WriteLine csvLine
+          file.Close
+          Set file = Nothing
+
+          ShowStatus "✅ Дані збережено успішно!", "success"
+          ClearInputFields()
+          LoadDataSilently()
+          UpdateFileInfo()
+
+          If Err.Number <> 0 Then
+              ShowStatus "❌ Помилка збереження: " & Err.Description, "error"
+          End If
+
+          On Error GoTo 0
+      End Sub
+
+      Sub ClearInputFields()
+          document.getElementById("moisture_drana").value = ""
+          document.getElementById("moisture_flour_vs").value = ""
+          document.getElementById("moisture_flour_1s").value = ""
+          document.getElementById("moisture_soak1").value = ""
+          document.getElementById("moisture_supply").value = ""
+
+          ' Автоматично збільшити номер відбору
+          Dim currentSample
+          currentSample = CInt(document.getElementById("sampleNumber").value)
+          If currentSample < 6 Then
+              document.getElementById("sampleNumber").value = currentSample + 1
+          Else
+              ' Якщо досягли 6, перейти на наступну дату і встановити відбір 1
+              Dim nextDate
+              nextDate = DateAdd("d", 1, CDate(document.getElementById("inputDate").value))
+              document.getElementById("inputDate").value = Year(nextDate) & "-" & Right("0" & Month(nextDate), 2) & "-" & Right("0" & Day(nextDate), 2)
+              document.getElementById("sampleNumber").value = 1
+          End If
+      End Sub
+
+      Sub LoadDataSilently()
+          On Error Resume Next
+          LoadDataFromFile(True)
+          LoadAverages()
+          On Error GoTo 0
+      End Sub
+
+      Sub loadData()
+          LoadDataFromFile(False)
+          LoadAverages()
+      End Sub
+
+      Sub LoadDataFromFile(silent)
+          On Error Resume Next
+
+          If Not fso.FileExists(csvFilePath) Then
+              If Not silent Then ShowStatus "❌ Файл даних не знайдено!", "error"
+              Exit Sub
+          End If
+
+          Dim file, content, lines, i, fields
+          Set file = fso.OpenTextFile(csvFilePath, 1, False, -1)
+          content = file.ReadAll()
+          file.Close
+          Set file = Nothing
+
+          lines = Split(content, vbCrLf)
+          totalRecords = 0
+
+          For i = 1 To UBound(lines)
+              If Trim(lines(i)) <> "" Then
+                  totalRecords = totalRecords + 1
+              End If
+          Next
+
+          If totalRecords = 0 Then
+              If Not silent Then ShowStatus "📝 Файл даних порожній", "info"
+              document.getElementById("dataDisplay").innerHTML = ""
+              document.getElementById("stats").innerHTML = ""
+              Exit Sub
+          End If
+
+          Dim htmlTable, recordsToShow, displayCount
+          recordsToShow = 20
+
+          htmlTable = "<h4>📊 Останні записи (всього: " & totalRecords & "):</h4>"
+          htmlTable = htmlTable & "<table><tr><th>📅 Дата</th><th>🔢 Відбір №</th><th>I драна</th><th>Борошно В/С</th><th>Борошно 1/С</th><th>1 замочка</th><th>Подача</th><th>🕐 Час</th></tr>"
+
+          displayCount = 0
+          For i = UBound(lines) To 1 Step -1
+              If Trim(lines(i)) <> "" And displayCount < recordsToShow Then
+                  fields = Split(lines(i), ",")
+                  If UBound(fields) >= 7 Then
+                      htmlTable = htmlTable & "<tr>"
+                      htmlTable = htmlTable & "<td>" & fields(0) & "</td>"
+                      htmlTable = htmlTable & "<td>" & fields(1) & "</td>"
+                      htmlTable = htmlTable & "<td>" & FormatMoistureValue(fields(2)) & "</td>"
+                      htmlTable = htmlTable & "<td>" & FormatMoistureValue(fields(3)) & "</td>"
+                      htmlTable = htmlTable & "<td>" & FormatMoistureValue(fields(4)) & "</td>"
+                      htmlTable = htmlTable & "<td>" & FormatMoistureValue(fields(5)) & "</td>"
+                      htmlTable = htmlTable & "<td>" & FormatMoistureValue(fields(6)) & "</td>"
+                      htmlTable = htmlTable & "<td>" & Mid(fields(7), 1, 16) & "</td>"
+                      htmlTable = htmlTable & "</tr>"
+                      displayCount = displayCount + 1
+                  End If
+              End If
+          Next
+
+          htmlTable = htmlTable & "</table>"
+          document.getElementById("dataDisplay").innerHTML = htmlTable
+
+          ShowStatistics(lines)
+
+          If Not silent Then ShowStatus "✅ Завантажено " & displayCount & " записів з " & totalRecords, "success"
+
+          If Err.Number <> 0 Then
+              If Not silent Then ShowStatus "❌ Помилка завантаження: " & Err.Description, "error"
+          End If
+
+          On Error GoTo 0
+      End Sub
+
+      Function FormatMoistureValue(value)
+          If value = "-" Or value = "" Then
+              FormatMoistureValue = "-"
+          Else
+              ' Показувати число як є в CSV (з крапкою) + знак %
+              FormatMoistureValue = value & "%"
+          End If
+      End Function
+
+      Sub ShowStatistics(lines)
+          On Error Resume Next
+
+          Dim count, i, fields
+          count = 0
+
+          For i = 1 To UBound(lines)
+              If Trim(lines(i)) <> "" Then
+                  count = count + 1
+              End If
+          Next
+
+          If count > 0 Then
+              Dim statsHTML
+              statsHTML = "<div class='stats-container'>"
+              statsHTML = statsHTML & "<div class='stat-box'><div class='stat-value'>" & count & "</div><div class='stat-label'>Всього записів</div></div>"
+              statsHTML = statsHTML & "</div>"
+
+              document.getElementById("stats").innerHTML = statsHTML
+          End If
+
+          On Error GoTo 0
+      End Sub
+
+      Sub LoadAverages()
+          On Error Resume Next
+
+          If Not fso.FileExists(csvFilePath) Then
+              document.getElementById("averagesDisplay").innerHTML = "<p>Немає даних для розрахунку середніх значень</p>"
+              Exit Sub
+          End If
+
+          Dim file, content, lines, i, fields
+          Set file = fso.OpenTextFile(csvFilePath, 1, False, -1)
+          content = file.ReadAll()
+          file.Close
+          Set file = Nothing
+
+          lines = Split(content, vbCrLf)
+
+          ' Словник для зберігання даних по датах
+          Dim dateDict
+          Set dateDict = CreateObject("Scripting.Dictionary")
+
+          For i = 1 To UBound(lines)
+              If Trim(lines(i)) <> "" Then
+                  fields = Split(lines(i), ",")
+                  If UBound(fields) >= 7 Then
+                      Dim dateKey
+                      dateKey = fields(0)
+
+                      If Not dateDict.Exists(dateKey) Then
+                          dateDict.Add dateKey, Array(0, 0, 0, 0, 0, 0) ' суми та кількості для кожного показника
+                      End If
+
+                      Dim dateData
+                      dateData = dateDict(dateKey)
+
+                      ' Додати значення якщо вони не порожні (числа з крапками в CSV)
+                      ' Перетворити крапки на коми для української локалізації
+                      If fields(2) <> "-" And fields(2) <> "" Then
+                          Dim dranaVal
+                          dranaVal = Replace(fields(2), ".", ",")
+                          If IsNumeric(dranaVal) Then
+                              dateData(0) = dateData(0) + CDbl(dranaVal)
+                              dateData(1) = dateData(1) + 1
+                          End If
+                      End If
+
+                      If fields(3) <> "-" And fields(3) <> "" Then
+                          Dim flourVsVal
+                          flourVsVal = Replace(fields(3), ".", ",")
+                          If IsNumeric(flourVsVal) Then
+                              dateData(2) = dateData(2) + CDbl(flourVsVal)
+                              dateData(3) = dateData(3) + 1
+                          End If
+                      End If
+
+                      If fields(4) <> "-" And fields(4) <> "" Then
+                          Dim flour1sVal
+                          flour1sVal = Replace(fields(4), ".", ",")
+                          If IsNumeric(flour1sVal) Then
+                              dateData(4) = dateData(4) + CDbl(flour1sVal)
+                              dateData(5) = dateData(5) + 1
+                          End If
+                      End If
+
+                      dateDict(dateKey) = dateData
+                  End If
+              End If
+          Next
+
+          ' Створення таблиці середніх значень
+          Dim htmlTable
+          htmlTable = "<table><tr><th>📅 Дата</th><th>I драна (сер.)</th><th>Борошно В/С (сер.)</th><th>Борошно 1/С (сер.)</th></tr>"
+
+          Dim dateKeys
+          dateKeys = dateDict.Keys
+
+          ' Сортування дат (простий метод)
+          Dim j, k, temp
+          For j = 0 To UBound(dateKeys) - 1
+              For k = j + 1 To UBound(dateKeys)
+                  If dateKeys(j) > dateKeys(k) Then
+                      temp = dateKeys(j)
+                      dateKeys(j) = dateKeys(k)
+                      dateKeys(k) = temp
+                  End If
+              Next
+          Next
+
+          For j = UBound(dateKeys) To 0 Step -1 ' Показати в зворотному порядку (найновіші спочатку)
+              Dim key, data
+              key = dateKeys(j)
+              data = dateDict(key)
+
+              htmlTable = htmlTable & "<tr>"
+              htmlTable = htmlTable & "<td><strong>" & key & "</strong></td>"
+
+              ' I драна
+              If data(1) > 0 Then
+                  htmlTable = htmlTable & "<td>" & Round(data(0) / data(1), 2) & "%</td>"
+              Else
+                  htmlTable = htmlTable & "<td>-</td>"
+              End If
+
+              ' Борошно В/С
+              If data(3) > 0 Then
+                  htmlTable = htmlTable & "<td>" & Round(data(2) / data(3), 2) & "%</td>"
+              Else
+                  htmlTable = htmlTable & "<td>-</td>"
+              End If
+
+              ' Борошно 1/С
+              If data(5) > 0 Then
+                  htmlTable = htmlTable & "<td>" & Round(data(4) / data(5), 2) & "%</td>"
+              Else
+                  htmlTable = htmlTable & "<td>-</td>"
+              End If
+
+              htmlTable = htmlTable & "</tr>"
+          Next
+
+          htmlTable = htmlTable & "</table>"
+          document.getElementById("averagesDisplay").innerHTML = htmlTable
+
+          On Error GoTo 0
+      End Sub
+
+      Sub exportCSV()
+          On Error Resume Next
+
+          If Not fso.FileExists(csvFilePath) Then
+              ShowStatus "❌ Немає даних для експорту!", "error"
+              Exit Sub
+          End If
+
+          shell.Run """" & csvFilePath & """"
+          ShowStatus "📄 CSV файл відкрито для перегляду", "success"
+
+          If Err.Number <> 0 Then
+              ShowStatus "❌ Помилка відкриття файлу: " & Err.Description, "error"
+          End If
+
+          On Error GoTo 0
+      End Sub
+
+      Sub clearAllData()
+          On Error Resume Next
+
+          Dim result
+          result = MsgBox("Ви впевнені, що хочете видалити ВСІ дані?" & vbCrLf & "Цю дію неможливо скасувати!", vbYesNo + vbCritical + vbDefaultButton2, "УВАГА!")
+
+          If result = vbYes Then
+              If fso.FileExists(csvFilePath) Then
+                  fso.DeleteFile(csvFilePath)
+              End If
+              InitializeDataFile()
+              document.getElementById("dataDisplay").innerHTML = ""
+              document.getElementById("stats").innerHTML = ""
+              document.getElementById("averagesDisplay").innerHTML = ""
+              ShowStatus "🗑️ Всі дані видалено!", "info"
+              UpdateFileInfo()
+          End If
+
+          On Error GoTo 0
+      End Sub
+
+      Sub Window_OnUnload
+          On Error Resume Next
+          Set fso = Nothing
+          Set shell = Nothing
+          On Error GoTo 0
+      End Sub
+    </script>
+
+    <script language="JavaScript">
+      function showTab(tabName) {
+        // Сховати всі вкладки
+        document.getElementById("input-tab").style.display = "none";
+        document.getElementById("averages-tab").style.display = "none";
+        document.getElementById("data-tab").style.display = "none";
+
+        // Видалити активний клас з усіх кнопок вкладок
+        var buttons = document.getElementsByTagName("div");
+        for (var i = 0; i < buttons.length; i++) {
+          if (buttons[i].className.indexOf("tab-button") >= 0) {
+            buttons[i].className = buttons[i].className.replace(" active", "");
+            if (buttons[i].className.indexOf("active") >= 0) {
+              buttons[i].className = buttons[i].className.replace("active", "");
+            }
+          }
+        }
+
+        // Показати обрану вкладку
+        document.getElementById(tabName + "-tab").style.display = "block";
+
+        // Додати активний клас до натиснутої кнопки
+        if (window.event && window.event.srcElement) {
+          var button = window.event.srcElement;
+          if (button.className.indexOf("active") < 0) {
+            button.className += " active";
+          }
+        }
+
+        // Якщо показуємо вкладку середніх значень, оновити дані
+        if (tabName === "averages") {
+          LoadAverages();
+        }
+      }
+    </script>
+  </body>
+</html>

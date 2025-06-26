@@ -1,1 +1,1 @@
-# YavirLab-HTA
+# YavirLab-HTA "Журнал вологості продукції"
